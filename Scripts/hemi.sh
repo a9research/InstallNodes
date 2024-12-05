@@ -503,7 +503,7 @@ Description=定期更新 GAS 费用
 
 [Timer]
 OnBootSec=5min
-OnUnitActiveSec=10min
+OnUnitActiveSec=15min
 
 [Install]
 WantedBy=timers.target
