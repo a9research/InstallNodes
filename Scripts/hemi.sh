@@ -26,7 +26,7 @@ get_next_node_number() {
 
 update_script() {
     # 指定URL
-    update_url="https://github.com/a9research/InstallNodes/blob/main/Scripts/hemi.sh"
+    update_url="https://raw.githubusercontent.com/a9research/InstallNodes/refs/heads/main/Scripts/hemi.sh"
     file_name=$(basename "$update_url")
 
     # 下载脚本文件
