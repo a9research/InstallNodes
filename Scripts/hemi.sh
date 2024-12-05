@@ -1,11 +1,15 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=202412050013
+current_version=202412050014
 
 # 定义基础目录和节点计数器文件
 BASE_DIR="/home/HEMI"
 NODE_COUNTER_FILE="${BASE_DIR}/.hemi_node_counter"
+GAS_FEE_CONFIG_FILE="${BASE_DIR}/gas_fee_config.txt"
+UPDATE_GAS_SCRIPT="${BASE_DIR}/update_gas_fee.sh"
+SYSTEMD_SERVICE_FILE="/etc/systemd/system/update-gas-fee.service"
+SYSTEMD_TIMER_FILE="/etc/systemd/system/update-gas-fee.timer"
 
 # 确保基础目录存在
 mkdir -p "$BASE_DIR"
@@ -427,6 +431,106 @@ function import_wallet() {
 }
 
 
+# 10: 启动自动调整 GAS 费用
+start_auto_update_gas() {
+    echo "启动自动调整 GAS 费用..."
+
+    # 检查是否已经存在脚本
+    if [ ! -f "$UPDATE_GAS_SCRIPT" ]; then
+        echo "创建自动更新 GAS 费用脚本..."
+        cat <<'EOF' > "$UPDATE_GAS_SCRIPT"
+#!/bin/bash
+
+BASE_DIR="/home/HEMI"
+GAS_FEE_CONFIG_FILE="${BASE_DIR}/gas_fee_config.txt"
+
+# 获取最新的推荐gas费用
+FEE=$(curl -s https://mempool.space/testnet/api/v1/fees/recommended | sed -n 's/.*"fastestFee":\([0-9.]*\).*/\1/p')
+
+# 读取之前保存的gas费用，如果没有则初始化
+if [ ! -f "$GAS_FEE_CONFIG_FILE" ]; then
+    echo "0" > "$GAS_FEE_CONFIG_FILE"
+fi
+
+# 读取当前的 gas 费用
+current_gas_fee=$(cat "$GAS_FEE_CONFIG_FILE")
+
+# 如果最新的gas费用不同，则更新配置文件
+if [ "$FEE" != "$current_gas_fee" ]; then
+    echo "更新 GAS 费用: 从 $current_gas_fee 到 $FEE"
+    echo "$FEE" > "$GAS_FEE_CONFIG_FILE"
+
+    # 更新系统服务中的 GAS 费用
+    for service_file in /lib/systemd/system/Hemi*.service; do
+        if [ -f "$service_file" ]; then
+            sudo sed -i "s/Environment=POPM_STATIC_FEE=[0-9.]*/Environment=POPM_STATIC_FEE=$FEE/" "$service_file"
+            sudo systemctl daemon-reload
+            sudo systemctl restart $(basename "$service_file" .service)
+        fi
+    done
+else
+    echo "GAS 费用未发生变化: $FEE"
+fi
+EOF
+        chmod +x "$UPDATE_GAS_SCRIPT"
+        echo "自动更新脚本已创建."
+    fi
+
+    # 检查是否已经存在 systemd 服务文件
+    if [ ! -f "$SYSTEMD_SERVICE_FILE" ]; then
+        echo "创建自动更新 GAS 费用 systemd 服务文件..."
+        cat <<'EOF' > "$SYSTEMD_SERVICE_FILE"
+[Unit]
+Description=自动更新 GAS 费用
+After=network.target
+
+[Service]
+ExecStart=/bin/bash /home/HEMI/update_gas_fee.sh
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+EOF
+        echo "systemd 服务文件已创建."
+    fi
+
+    # 检查是否已经存在 systemd 定时器文件
+    if [ ! -f "$SYSTEMD_TIMER_FILE" ]; then
+        echo "创建定时器文件..."
+        cat <<'EOF' > "$SYSTEMD_TIMER_FILE"
+[Unit]
+Description=定期更新 GAS 费用
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=10min
+
+[Install]
+WantedBy=timers.target
+EOF
+        echo "定时器文件已创建."
+    fi
+
+    # 启动 systemd 服务和定时器
+    echo "启动定时器..."
+    sudo systemctl daemon-reload
+    sudo systemctl enable update-gas-fee.timer
+    sudo systemctl start update-gas-fee.timer
+
+    echo "自动调整 GAS 费用已启动."
+}
+
+# 11: 关闭自动调整 GAS 费用
+stop_auto_update_gas() {
+    echo "关闭自动调整 GAS 费用..."
+
+    # 停止并禁用定时器
+    sudo systemctl stop update-gas-fee.timer
+    sudo systemctl disable update-gas-fee.timer
+
+    echo "自动调整 GAS 费用已关闭，定时任务已停止."
+}
+
 
 # 主菜单
 function main_menu() {
@@ -446,6 +550,8 @@ function main_menu() {
         echo "7. 更新代码 update_code"
         echo "8. 导入钱包 import_wallet"
         echo "9. 导出钱包 export_wallet_info"
+        echo "10) 启动自动调整 GAS 费用"
+        echo "11) 关闭自动调整 GAS 费用"
         echo "1618. 卸载节点 uninstall_node"
         echo "0. 退出脚本 exit"
         read -p "请输入选项: " OPTION
@@ -460,6 +566,8 @@ function main_menu() {
         7) update_code ;;
         8) import_wallet ;;
         9) export_wallet_info ;;
+        10) start_auto_update_gas ;;
+        11) stop_auto_update_gas ;;
         1618) uninstall_node ;;
         0) echo "退出脚本。"; exit 0 ;;
         *) echo "无效选项，请重新输入。"; sleep 3 ;;
