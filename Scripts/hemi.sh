@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241205008
+current_version=20241205009
 
 # 定义基础目录和节点计数器文件
 BASE_DIR="/home/HEMI"
@@ -78,7 +78,7 @@ function install_common_files() {
     sudo apt install -y jq git make
 
     # 检查是否已安装Go
-    if command -v go >/dev/null 2>&1; then
+    if [ -d "/usr/local/go" ]; then
         echo "Go已安装。"
     else
         # 安装GO
@@ -150,8 +150,6 @@ function add_node() {
     # 如果是第一个节点实例，安装公共工作文件
     if [ $node_number -eq 1 ]; then
         install_common_files
-        # 重置节点计数器
-        echo "0" > "$NODE_COUNTER_FILE"
     fi
 
     install_node $node_number
@@ -347,7 +345,7 @@ function uninstall_node() {
             done
 
             # 删除工作目录
-            rm -rf "$BASE_DIR/heminetwork"
+            rm -rf "$BASE_DIR/"
 
             # 重新加载systemd管理器配置
             sudo systemctl daemon-reload
@@ -427,7 +425,7 @@ function main_menu() {
         clear
         echo "===================Hemi Network一键部署脚本==================="
         echo "当前版本：$current_version"
-        echo "沟通电报群：https://t.me/lumaogogogo"
+        echo "沟通电报群：https://t.me/"
         echo "推荐配置：2C4G100G"
         echo "请选择要执行的操作:"
         echo "1. 添加节点 add_node"
