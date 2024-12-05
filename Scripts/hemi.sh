@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241205002
+current_version=20241205003
 
 # 定义基础目录和节点计数器文件
 BASE_DIR="/home/HEMI"
@@ -68,6 +68,9 @@ function install_common_files() {
         return
     fi
 
+    # 确保基础目录存在
+    mkdir -p "$BASE_DIR"
+
     # 安装依赖
     sudo apt update
     sudo apt install -y jq git make
@@ -86,8 +89,9 @@ function install_common_files() {
     fi
 
     # 克隆代码并安装
-    git clone https://github.com/hemilabs/heminetwork.git "${BASE_DIR}/heminetwork"
+    mkdir -p "${BASE_DIR}/heminetwork" # 显式创建目录
     cd "${BASE_DIR}/heminetwork"
+    git clone https://github.com/hemilabs/heminetwork.git . # 克隆到当前目录
     make deps
     make install
 }
@@ -141,6 +145,8 @@ function add_node() {
     # 如果是第一个节点实例，安装公共工作文件
     if [ $node_number -eq 1 ]; then
         install_common_files
+        # 重置节点计数器
+        echo "1" > "$NODE_COUNTER_FILE"
     fi
 
     install_node $node_number
@@ -379,7 +385,7 @@ function import_wallet() {
     echo "请选择要导入钱包私钥的节点实例："
     nodes=(/lib/systemd/system/hemi*.service)
     for index in "${!nodes[@]}"; do
-        service_file=${nodes[index]}
+        service_file=${nodes[$index]}
         node_name=$(basename "$service_file" .service)
         echo "$((index+1)). $node_name"
     done
