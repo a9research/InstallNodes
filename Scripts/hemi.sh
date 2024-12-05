@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241205006
+current_version=20241205007
 
 # 定义基础目录和节点计数器文件
 BASE_DIR="/home/HEMI"
@@ -63,6 +63,7 @@ update_script() {
 }
 
 function install_common_files() {
+    echo "安装工作文件中。"
     # 检查公共工作文件是否已经安装
     if [ -d "${BASE_DIR}/heminetwork" ]; then
         echo "公共工作文件已安装。"
@@ -147,7 +148,7 @@ function add_node() {
     node_number=$(get_next_node_number)
 
     # 如果是第一个节点实例，安装公共工作文件
-    if [ $node_number -eq 0 ]; then
+    if [ $node_number -eq 1 ]; then
         install_common_files
         # 重置节点计数器
         echo "0" > "$NODE_COUNTER_FILE"
