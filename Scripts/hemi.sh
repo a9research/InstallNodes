@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241205004
+current_version=20241205005
 
 # 定义基础目录和节点计数器文件
 BASE_DIR="/home/HEMI"
@@ -13,10 +13,6 @@ mkdir -p "$BASE_DIR"
 # 初始化节点计数器
 if [ ! -f "$NODE_COUNTER_FILE" ]; then
     echo "0" > "$NODE_COUNTER_FILE"
-else
-    # 如果需要，可以在这里添加逻辑来检查计数器的值，并在必要时重置它
-    # 例如，如果您想要在每次运行脚本时重置计数器，可以在这里添加：
-    # echo "0" > "$NODE_COUNTER_FILE"
 fi
 
 
