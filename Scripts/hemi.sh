@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241205001
+current_version=20241205002
 
 # 定义基础目录和节点计数器文件
 BASE_DIR="/home/HEMI"
@@ -179,14 +179,49 @@ function export_wallet_info() {
 }
 
 # 查看日志
-function view_logs(){
-	sudo journalctl -u hemi.service -f --no-hostname -o cat
+function view_logs() {
+    echo "请选择要查看日志的节点实例："
+    nodes=(/lib/systemd/system/hemi*.service)
+    for index in "${!nodes[@]}"; do
+        service_file=${nodes[index]}
+        node_name=$(basename "$service_file" .service)
+        echo "$((index+1)). $node_name"
+    done
+
+    read -p "请输入节点编号: " node_choice
+    node_service=${nodes[$node_choice-1]}
+    node_name=$(basename "$node_service" .service)
+
+    if [ -z "$node_name" ]; then
+        echo "无效的节点编号。"
+        return 1
+    fi
+
+    sudo journalctl -u "$node_name" -f --no-hostname -o cat
 }
 
 # 查看节点状态
-function view_status(){
-	sudo systemctl status hemi
+function view_status() {
+    echo "请选择要查看状态的节点实例："
+    nodes=(/lib/systemd/system/hemi*.service)
+    for index in "${!nodes[@]}"; do
+        service_file=${nodes[index]}
+        node_name=$(basename "$service_file" .service)
+        echo "$((index+1)). $node_name"
+    done
+
+    read -p "请输入节点编号: " node_choice
+    node_service=${nodes[$node_choice-1]}
+    node_name=$(basename "$node_service" .service)
+
+    if [ -z "$node_name" ]; then
+        echo "无效的节点编号。"
+        return 1
+    fi
+
+    sudo systemctl status "$node_name"
 }
+
 
 # 停止节点
 function stop_node() {
@@ -251,7 +286,7 @@ function check_and_upgrade {
     # 进入项目目录
     project_folder="heminetwork"
 
-    cd ~/$project_folder || { echo "Directory ~/$project_folder does not exist."; exit 1; }
+    cd $BASE_DIR/$project_folder || { echo "Directory $BASE_DIR/$project_folder does not exist."; exit 1; }
 
     # 获取本地版本
     local_version=$(git describe --tags --abbrev=0)
