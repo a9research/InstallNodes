@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241127002
+current_version=20241205001
 
 # 定义基础目录和节点计数器文件
 BASE_DIR="/home/HEMI"
@@ -372,6 +372,7 @@ function import_wallet() {
 
     echo "节点 $node_name 的钱包私钥已更新。"
 }
+
 
 
 # 主菜单
