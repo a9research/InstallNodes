@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=202412050010
+current_version=202412050011
 
 # 定义基础目录和节点计数器文件
 BASE_DIR="/home/HEMI"
@@ -107,13 +107,12 @@ function install_node() {
 
     # 确保节点配置目录存在
     mkdir -p "$node_config_path"
-    cd "$node_config_path"
 
     FEE=$(curl -s https://mempool.space/testnet/api/v1/fees/recommended | sed -n 's/.*"fastestFee":\([0-9.]*\).*/\1/p')
     read -p "设置gas(参考值：$FEE)：" POPM_STATIC_FEE
 
     # 生成密钥
-    ./bin/keygen -secp256k1 -json -net="testnet" > "${node_config_path}/popm-address.json"
+    "${BASE_DIR}/heminetwork/bin/keygen" -secp256k1 -json -net="testnet" > "${node_config_path}/popm-address.json"
     POPM_BTC_PRIVKEY=$(jq -r '.private_key' "${node_config_path}/popm-address.json")
     POPM_BTC_PUBKEY=$(jq -r '.pubkey_hash' "${node_config_path}/popm-address.json")
 
