@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241205005
+current_version=20241205006
 
 # 定义基础目录和节点计数器文件
 BASE_DIR="/home/HEMI"
@@ -147,10 +147,10 @@ function add_node() {
     node_number=$(get_next_node_number)
 
     # 如果是第一个节点实例，安装公共工作文件
-    if [ $node_number -eq 1 ]; then
+    if [ $node_number -eq 0 ]; then
         install_common_files
         # 重置节点计数器
-        echo "1" > "$NODE_COUNTER_FILE"
+        echo "0" > "$NODE_COUNTER_FILE"
     fi
 
     install_node $node_number
