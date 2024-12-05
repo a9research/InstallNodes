@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241205003
+current_version=20241205004
 
 # 定义基础目录和节点计数器文件
 BASE_DIR="/home/HEMI"
@@ -12,8 +12,13 @@ mkdir -p "$BASE_DIR"
 
 # 初始化节点计数器
 if [ ! -f "$NODE_COUNTER_FILE" ]; then
-    echo "1" > "$NODE_COUNTER_FILE"
+    echo "0" > "$NODE_COUNTER_FILE"
+else
+    # 如果需要，可以在这里添加逻辑来检查计数器的值，并在必要时重置它
+    # 例如，如果您想要在每次运行脚本时重置计数器，可以在这里添加：
+    # echo "0" > "$NODE_COUNTER_FILE"
 fi
+
 
 # 获取下一个节点编号
 get_next_node_number() {
@@ -102,6 +107,9 @@ function install_node() {
     local node_number=$1
     local node_name="Hemi$(printf '%03d\n' $node_number)"
     local node_config_path="${BASE_DIR}/${node_name}_config"
+
+    # 确保节点配置目录存在
+    mkdir -p "$node_config_path"
 
     FEE=$(curl -s https://mempool.space/testnet/api/v1/fees/recommended | sed -n 's/.*"fastestFee":\([0-9.]*\).*/\1/p')
     read -p "设置gas(参考值：$FEE)：" POPM_STATIC_FEE
