@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241205007
+current_version=20241205008
 
 # 定义基础目录和节点计数器文件
 BASE_DIR="/home/HEMI"
@@ -192,7 +192,7 @@ function export_wallet_info() {
 # 查看日志
 function view_logs() {
     echo "请选择要查看日志的节点实例："
-    nodes=(/lib/systemd/system/hemi*.service)
+    nodes=(/lib/systemd/system/Hemi*.service)
     for index in "${!nodes[@]}"; do
         service_file=${nodes[index]}
         node_name=$(basename "$service_file" .service)
@@ -214,7 +214,7 @@ function view_logs() {
 # 查看节点状态
 function view_status() {
     echo "请选择要查看状态的节点实例："
-    nodes=(/lib/systemd/system/hemi*.service)
+    nodes=(/lib/systemd/system/Hemi*.service)
     for index in "${!nodes[@]}"; do
         service_file=${nodes[index]}
         node_name=$(basename "$service_file" .service)
@@ -237,7 +237,7 @@ function view_status() {
 # 停止节点
 function stop_node() {
     # 遍历所有节点服务文件
-    for service_file in /lib/systemd/system/hemi*.service; do
+    for service_file in /lib/systemd/system/Hemi*.service; do
         if [ -f "$service_file" ]; then
             # 从服务文件名中提取节点名称
             node_name=$(basename "$service_file" .service)
@@ -253,7 +253,7 @@ function stop_node() {
 # 启动节点
 function start_node() {
     # 遍历所有节点服务文件
-    for service_file in /lib/systemd/system/hemi*.service; do
+    for service_file in /lib/systemd/system/Hemi*.service; do
         if [ -f "$service_file" ]; then
             # 从服务文件名中提取节点名称
             node_name=$(basename "$service_file" .service)
@@ -275,7 +275,7 @@ function update_gas(){
     read -p "设置新的gas费用(参考值：$FEE)：" new_gas_fee
 
     # 遍历所有节点服务文件
-    for service_file in /lib/systemd/system/hemi*.service; do
+    for service_file in /lib/systemd/system/Hemi*.service; do
         if [ -f "$service_file" ]; then
             # 从服务文件名中提取节点名称
             node_name=$(basename "$service_file" .service)
@@ -340,7 +340,7 @@ function uninstall_node() {
             stop_node  # 停止所有节点服务
 
             # 删除所有节点的服务文件
-            for service_file in /lib/systemd/system/hemi*.service; do
+            for service_file in /lib/systemd/system/Hemi*.service; do
                 if [ -f "$service_file" ]; then
                     sudo rm "$service_file"
                 fi
@@ -388,7 +388,7 @@ update_code () {
 function import_wallet() {
     # 列出所有节点实例
     echo "请选择要导入钱包私钥的节点实例："
-    nodes=(/lib/systemd/system/hemi*.service)
+    nodes=(/lib/systemd/system/Hemi*.service)
     for index in "${!nodes[@]}"; do
         service_file=${nodes[$index]}
         node_name=$(basename "$service_file" .service)
