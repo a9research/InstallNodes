@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=202412050011
+current_version=202412050012
 
 # 定义基础目录和节点计数器文件
 BASE_DIR="/home/HEMI"
@@ -268,7 +268,7 @@ function start_node() {
 function update_gas(){
     local new_gas_fee
     # 获取参考值
-    FEE=$(curl -s https://mempool.space/testnet/api/v1/fees/recommended | sed -n 's/.*"fastestFee": $[0-9.]*$ .*/\1/p')
+    FEE=$(curl -s https://mempool.space/testnet/api/v1/fees/recommended | sed -n 's/.*"fastestFee":\([0-9.]*\).*/\1/p')
     # 提示用户输入新的Gas费用
     read -p "设置新的gas费用(参考值：$FEE)：" new_gas_fee
 
