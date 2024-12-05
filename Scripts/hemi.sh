@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=202412050012
+current_version=202412050013
 
 # 定义基础目录和节点计数器文件
 BASE_DIR="/home/HEMI"
@@ -269,8 +269,17 @@ function update_gas(){
     local new_gas_fee
     # 获取参考值
     FEE=$(curl -s https://mempool.space/testnet/api/v1/fees/recommended | sed -n 's/.*"fastestFee":\([0-9.]*\).*/\1/p')
-    # 提示用户输入新的Gas费用
-    read -p "设置新的gas费用(参考值：$FEE)：" new_gas_fee
+
+    echo "推荐的Gas费用为：$FEE sat/byte"
+
+    # 提示用户是否采用推荐的Gas费用，默认使用推荐值
+    read -p "是否使用推荐的Gas费用 $FEE (默认使用): " user_input
+    if [ -z "$user_input" ]; then
+        new_gas_fee=$FEE
+    else
+        new_gas_fee=$user_input
+    fi
+
 
     # 遍历所有节点服务文件
     for service_file in /lib/systemd/system/Hemi*.service; do
